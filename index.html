@@ -1,173 +1,282 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Farming and Friends Calculator</title>
-<meta name="description" content="Sell value calculator, best crop ranking and chocolate milk planner for the Roblox game Farming and Friends.">
+<meta name="description" content="Sell profit calculator, best crop ranking and chocolate milk planner for the Roblox game Farming and Friends.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpolygon points='8,6 44,6 52,14 52,58 8,58' fill='%232d5a3a'/%3E%3Cpolygon points='8,6 30,6 22,58 8,58' fill='%23367048'/%3E%3Cpolygon points='14,12 46,12 46,26 14,26' fill='%23cfe8c4'/%3E%3Cpolygon points='14,32 22,32 22,38 14,38' fill='%23f2c14e'/%3E%3Cpolygon points='26,32 34,32 34,38 26,38' fill='%23f2c14e'/%3E%3Cpolygon points='14,44 22,44 22,50 14,50' fill='%23f2c14e'/%3E%3Cpolygon points='34,28 60,34 44,60' fill='%23f0701f'/%3E%3Cpolygon points='34,28 60,34 50,42' fill='%23ff9a3d'/%3E%3Cpolygon points='34,28 30,16 40,22' fill='%2358b368'/%3E%3Cpolygon points='34,28 44,16 46,26' fill='%2338893f'/%3E%3C/svg%3E">
 <style>
-:root{--bg:#e9f0e1;--card:#fbfdf8;--ink:#1f2a1c;--mute:#566650;--green:#2d6a3e;--gold:#a8760f;--line:#cdd9c2;--soft:#f0f6ea}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-rounded,"Nunito","Trebuchet MS",system-ui,sans-serif}
-header{background:var(--green);color:#f3f8ee;padding:24px 20px}
-header h1{margin:0;font-size:clamp(1.5rem,5vw,2.3rem);letter-spacing:-.01em}
-header p{margin:6px 0 0;max-width:62ch;color:#d3e6cd}
-nav{display:flex;gap:6px;flex-wrap:wrap;max-width:940px;margin:16px auto 0;padding:0 20px}
-nav button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer}
-nav button[aria-selected=true]{background:var(--green);color:#fff;border-color:var(--green)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
-main{max-width:940px;margin:0 auto;padding:16px 20px 24px}
-.tab{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+:root{--bg:#e4d9bd;--paper:#f3ebd6;--ink:#2b261b;--mute:#6d6550;--red:#962d20;--rule:#b3a684;--good:#2c6b2f;--bad:#a52a1c;--grain:.07}
+:root[data-theme="dark"]{--bg:#12150f;--paper:#1c2017;--ink:#e9e2cc;--mute:#9a9378;--red:#e5806a;--rule:#454a38;--good:#8fd08a;--bad:#ff907c;--grain:.04}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="dark"]){--bg:#12150f;--paper:#1c2017;--ink:#e9e2cc;--mute:#9a9378;--red:#e5806a;--rule:#454a38;--good:#8fd08a;--bad:#ff907c;--grain:.04}}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
+.mono,td input,.row b,.row span,th{font-family:"Courier New",Courier,monospace}
+header{position:relative;min-height:240px;background:#0c0f09;overflow:hidden}
+.scene{position:absolute;inset:0;width:100%;height:100%}
+.scene *{transition:fill .5s,stroke .5s}
+.sky{fill:#10141f}.h1{fill:#1a2316}.h2{fill:#243020}.barn{fill:#6e281c}.roof{fill:#3c140d}.rows{stroke:#3e5530}.shade{fill:#000;opacity:.25}.day{display:none}
+:root[data-theme="light"] .sky{fill:url(#dsky)}:root[data-theme="light"] .h1{fill:#a9d686}:root[data-theme="light"] .h2{fill:#8dc569}:root[data-theme="light"] .barn{fill:#b5402d}:root[data-theme="light"] .roof{fill:#7c2618}:root[data-theme="light"] .rows{stroke:#5f9440}:root[data-theme="light"] .shade{opacity:0}:root[data-theme="light"] .night{display:none}:root[data-theme="light"] .day{display:inline}
+:root[data-theme="light"] .hero{color:#14210d}:root[data-theme="light"] .hero h1{text-shadow:0 1px 0 rgba(255,255,255,.5)}:root[data-theme="light"] .hero p{color:#1f3016;text-shadow:none}:root[data-theme="light"] .kick{color:#8a2a1a}
+.hero{position:relative;max-width:900px;margin:0 auto;padding:82px 22px 28px;color:#efe7cc}
+.kick{font:.78rem "Courier New",monospace;letter-spacing:.16em;text-transform:uppercase;color:#d9a05a}
+.hero h1{margin:4px 0 0;font:italic 700 clamp(2rem,7vw,3.4rem)/1 Georgia,serif;text-shadow:0 2px 0 #000}
+.hero p{margin:10px 0 0;max-width:46ch;color:#cfc7aa;text-shadow:0 1px 0 #000}
+#theme{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:3;width:44px;height:44px;border-radius:50%;border:2px solid #efe7cc;background:transparent;cursor:pointer;display:grid;place-items:center;padding:0}
+#theme svg{width:28px;height:28px;grid-area:1/1;transition:opacity .3s,transform .5s}
+#theme .moon{opacity:0;transform:rotate(-70deg)}
+:root[data-theme="light"] #theme{background:#f2c14e;border-color:#2b261b}
+:root[data-theme="light"] #theme .sun{animation:spin 16s linear infinite}
+:root[data-theme="dark"] #theme .sun{opacity:0}
+:root[data-theme="dark"] #theme .moon{opacity:1;transform:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#theme svg{transition:none;animation:none!important}}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.page{max-width:900px;margin:0 auto;background:var(--paper);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");background-blend-mode:multiply;border-left:1px solid var(--rule);border-right:1px solid var(--rule);padding:0 22px 26px}
+nav{display:flex;flex-wrap:wrap;gap:2px 20px;padding:14px 0 8px;border-bottom:3px double var(--rule)}
+nav button{font:inherit;font-size:.98rem;background:none;border:0;border-bottom:2px solid transparent;color:var(--mute);padding:4px 0;cursor:pointer}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected=true]{color:var(--ink);font-weight:700;border-bottom-color:var(--red)}
+nav .wip::after{content:"soon";font:.62rem "Courier New",monospace;margin-left:4px;color:var(--red);vertical-align:super}
+.memo{margin:16px 0 0;padding:6px 0 6px 12px;border-left:3px solid var(--red);font-size:.9rem;color:var(--mute)}
+.memo b{color:var(--ink)}
+h2{font:italic 700 1.7rem/1.1 Georgia,serif;margin:22px 0 6px}
+h3{font:700 .8rem "Courier New",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin:26px 0 4px}
 .hidden{display:none}
-h2{margin:0 0 6px;font-size:1.25rem}
-h3{margin:20px 0 6px;font-size:1.02rem;color:var(--green)}
 .note{color:var(--mute);font-size:.88rem;margin:6px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:10px}
-label{display:grid;gap:4px;font-size:.88rem;color:var(--mute)}
-input,select{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
-td input{max-width:120px;text-align:right}
-.check{display:flex;align-items:center;gap:8px;color:var(--ink);margin-top:10px}
-.check input{width:auto}
-.bar{position:sticky;top:0;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;z-index:2}
-.bar b{color:var(--gold);font-size:1.25rem}
-.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
-.out div{background:var(--soft);border-radius:10px;padding:9px 12px}
-.out span{display:block;font-size:.8rem;color:var(--mute)}
-.out b{font-size:1.15rem;color:var(--green)}
-.out .hi b{color:var(--gold)}
+.opts{display:flex;gap:6px 24px;flex-wrap:wrap;margin:10px 0}
+.opts button{font:inherit;font-size:.88rem;background:none;border:1px solid var(--ink);color:var(--ink);padding:3px 10px;cursor:pointer}.opts button:hover{background:color-mix(in srgb,var(--red) 14%,transparent)}
+.opts label,.f{display:flex;align-items:center;gap:8px;font-size:.98rem}
+.f{display:grid;gap:3px;max-width:230px;margin:10px 0;color:var(--mute);font-size:.85rem}
+input,select{font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--ink);border-radius:0;padding:3px 2px;width:100%}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--red)}
+select{background:var(--paper)}
+td input{max-width:96px;text-align:right;font-size:.92rem}
+td input:focus{background:color-mix(in srgb,var(--red) 12%,transparent)}
 .scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;min-width:480px}
-th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
-th:first-child,td:first-child{text-align:left}
-th{font-size:.82rem;color:var(--mute);font-weight:600}
-footer{max-width:940px;margin:0 auto;padding:0 20px 30px}
+table{border-collapse:collapse;width:100%;min-width:540px}
+th{font-size:.7rem;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:400;text-align:right;padding:4px 6px;border-bottom:1px solid var(--ink)}
+td{text-align:right;padding:3px 6px;border-bottom:1px dotted var(--rule);font-size:.95rem}
+th:first-child,td:first-child,td.l{text-align:left}
+td.l{font-size:.88rem;color:var(--mute)}
+.receipt{margin:16px 0;padding:12px 14px;border:1px dashed var(--ink);max-width:420px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:2}
+.row{display:flex;align-items:baseline;gap:6px;font-size:.92rem}
+.row i{flex:1;border-bottom:1px dotted var(--mute);transform:translateY(-3px)}
+.row.tot{font-size:1.1rem;font-weight:700;margin-top:6px;padding-top:4px;border-top:3px double var(--ink)}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.stamp{display:inline-block;font:700 .95rem "Courier New",monospace;letter-spacing:.2em;color:var(--red);border:2px solid var(--red);padding:2px 10px;transform:rotate(-3deg);opacity:.85;margin-top:18px}
+.mute{color:var(--mute)}
+footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 </style>
 </head>
 <body>
 <header>
-<h1>Farming and Friends Calculator</h1>
-<p>Type what you have, see what it sells for. Prices change in game, so every price below can be edited.</p>
+<svg class="scene" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<defs><linearGradient id="dsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc0ee"/><stop offset="1" stop-color="#d6efff"/></linearGradient></defs><rect class="sky" width="900" height="240"/>
+<g class="night" fill="#e8e0c4"><circle cx="60" cy="40" r="1.3"/><circle cx="210" cy="26" r="1.3"/><circle cx="350" cy="58" r="1"/><circle cx="520" cy="30" r="1.3"/><circle cx="640" cy="66" r="1"/><circle cx="860" cy="30" r="1.3"/></g>
+<circle class="night" cx="740" cy="64" r="24" fill="#ece3bc"/><g class="day"><circle cx="740" cy="64" r="36" fill="#fff3a8" opacity=".55"/><circle cx="740" cy="64" r="22" fill="#ffd34a"/><g fill="#fff" opacity=".92"><ellipse cx="430" cy="54" rx="42" ry="11"/><ellipse cx="460" cy="45" rx="26" ry="10"/><ellipse cx="190" cy="96" rx="36" ry="9"/><ellipse cx="214" cy="88" rx="22" ry="8"/></g></g>
+<polygon points="0,170 110,120 220,158 360,106 500,160 640,118 780,160 900,126 900,240 0,240" class="h1"/>
+<polygon points="0,196 900,180 900,240 0,240" class="h2"/>
+<polygon points="590,184 590,150 624,130 658,150 658,184" class="barn"/><polygon points="584,152 624,126 664,152 624,138" class="roof"/><polygon points="612,184 612,162 636,162 636,184" fill="#1d0a06"/>
+<polygon points="680,184 680,136 696,136 696,184" fill="#8d866f"/>
+<g class="rows" stroke-width="2"><line x1="0" y1="206" x2="900" y2="194"/><line x1="0" y1="217" x2="900" y2="207"/><line x1="0" y1="229" x2="900" y2="221"/></g>
+<rect class="shade" width="900" height="240"/>
+</svg>
+<button id="theme" type="button" aria-label="Switch light or dark theme" title="Switch theme">
+<svg class="sun" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#e0902f" stroke-width="2.6" stroke-linecap="round"><line x1="16" y1="2" x2="16" y2="6"/><line x1="16" y1="26" x2="16" y2="30"/><line x1="2" y1="16" x2="6" y2="16"/><line x1="26" y1="16" x2="30" y2="16"/><line x1="6" y1="6" x2="9" y2="9"/><line x1="23" y1="23" x2="26" y2="26"/><line x1="26" y1="6" x2="23" y2="9"/><line x1="9" y1="23" x2="6" y2="26"/></g><circle cx="16" cy="16" r="7" fill="#e0902f" stroke="#6b3500" stroke-width="2"/></svg>
+<svg class="moon" viewBox="0 0 32 32" aria-hidden="true"><path d="M22 4a12 12 0 1 0 6 20 10 10 0 0 1-6-20z" fill="#efe7cc"/></svg>
+</button>
+<div class="hero"><div class="kick">Unofficial price ledger</div><h1>Farming &amp; Friends<br>Calculator</h1><p>Type in what you harvested and see what you actually keep after seeds. Every price is editable, because the boards move.</p></div>
 </header>
-<nav id="nav" role="tablist"></nav>
-<main>
+<div class="page">
+<nav id="nav" role="tablist" aria-label="Sections"></nav>
+<p class="memo"><b>Not listed:</b> event items and limited items. There are no public stats for them, so I won’t guess. A “?” means the value isn’t confirmed yet.</p>
 
-<section class="tab" id="t0">
+<section id="t0" role="tabpanel">
 <h2>Sell calculator</h2>
-<p class="note">Prices start at the values seen on the in-game sell boards. Edit a price to match the board you see, enter how many you have, and the total updates.</p>
-<label class="check"><input id="club" type="checkbox"> Farmer’s Club member (+5% on crop sales)</label>
-<div class="bar"><span>Crops <b id="s-crop">0</b></span><span>Everything else <b id="s-other">0</b></span><span>Total <b id="s-all">0</b></span></div>
+<p class="note">Sell price is what the board pays you. Buy price is what each one cost you, and crops start at seed box ÷ 50. Everything marked “Est.” is an estimate, because board prices keep moving, about every 5 minutes. A rainbow price means the crop is at its max. The wiki average and max buttons only fill the crops that have wiki numbers.</p>
+<div class="opts">
+<label><input id="club" type="checkbox"> Farmer’s Club (+10%)</label>
+<label><input id="group" type="checkbox"> Group member (+5%)</label>
+</div>
+<div class="opts"><button id="avg" type="button">Set crops to wiki average</button><button id="max" type="button">Set crops to wiki max (rainbow)</button></div>
+<p class="note">Bonuses only touch crop sales and add together, so both is +15%.</p>
+<div class="receipt" aria-live="polite">
+<div class="row"><span>Est. revenue</span><i></i><b id="s-rev">0</b></div>
+<div class="row"><span>Est. bonus (included)</span><i></i><b id="s-bon">0</b></div>
+<div class="row"><span>Total buy price</span><i></i><b id="s-cost">0</b></div>
+<div class="row"><span>Est. margin</span><i></i><b id="s-mar">0%</b></div>
+<div class="row tot"><span>Est. net profit</span><i></i><b id="s-prof">0</b></div>
+</div>
 <div id="sell"></div>
 </section>
 
-<section class="tab hidden" id="t1">
+<section id="t1" class="hidden" role="tabpanel">
 <h2>Best crops</h2>
-<p class="note">Ranked by profit per minute using the prices from the sell calculator. A seed box plants about 50 seeds.</p>
-<div class="grid"><label>Crops per seed box<input id="units" type="number" min="1" value="50"></label></div>
-<div class="scroll"><table><thead><tr><th>Crop</th><th>Seed box</th><th>Grow (min)</th><th>Net per box</th><th>Profit per min</th></tr></thead><tbody id="rank"></tbody></table></div>
-<p class="note">Grape growth time is N/A, so Grape can’t be ranked. Sell prices swing between low and high, so check the board before you plant.</p>
+<p class="note">Ranked by profit per minute, using your sell prices and bonuses.</p>
+<label class="f">Crops per seed box<input id="units" type="number" min="1" value="50"></label>
+<div class="scroll"><table><thead><tr><th>Crop</th><th>Seed box</th><th>Grow (min)</th><th>Est. net per box</th><th>Est. profit / min</th><th>Equipment</th></tr></thead><tbody id="rank"></tbody></table></div>
+<p class="note">Potatoes take 40 minutes by default and about 20 with level 4 equipment. Grape’s 16.5 minutes comes from a community wiki. “-” means the equipment level isn’t confirmed.</p>
 </section>
 
-<section class="tab hidden" id="t2">
+<section id="t2" class="hidden" role="tabpanel">
 <h2>Chocolate milk planner</h2>
-<div class="grid">
-<label>Jugs to make<input id="jugs" type="number" min="1" value="60"></label>
-<label>Milk type<select id="milk"><option value="10">Regular (10 per jug)</option><option value="5">Free-range (5 per jug)</option></select></label>
-</div>
-<div class="out" id="choc"></div>
-<p class="note">Each jug needs 25 cocoa plus milk, and a full factory run makes up to 60 jugs. Cocoa, milk and chocolate prices come from the sell calculator. Setup (factory 50,000, cocoa trees 70,000, Oxbo3220 about 140,000) is roughly 260,000 before barns and cows.</p>
+<label class="f">Jugs to make<input id="jugs" type="number" min="1" value="60"></label>
+<label class="f">Milk type<select id="milk"><option value="10">Regular (10 per jug)</option><option value="5">Free-range (5 per jug)</option></select></label>
+<div class="receipt" style="position:static" id="choc"></div>
+<p class="note">Each jug takes 25 cocoa plus milk, and a full run makes up to 60 jugs. Prices come from the sell tab. Setup is about 260,000 (factory 50,000, cocoa trees 70,000, Oxbo3220 about 140,000), before barns and cows.</p>
 </section>
 
-<section class="tab hidden" id="t3">
+<section id="t3" class="hidden" role="tabpanel">
 <h2>Shop prices</h2>
-<div class="scroll"><table><thead><tr><th>Item</th><th>Cost</th><th>Notes</th></tr></thead><tbody id="shop"></tbody></table></div>
-<p class="note">Costs without a source note come from in-game shop screenshots.</p>
+<label class="f">Show<select id="cat"></select></label>
+<div class="scroll"><table><thead><tr><th>Item</th><th>Type</th><th>Buy price</th><th>Notes</th></tr></thead><tbody id="shop"></tbody></table></div>
+<p class="note">Crop seeds come from FarmCo and tree seeds from Wood N Stuff. A pallet is 27 boxes, sold by the Bulk Store Owner outside FarmCo, and I work out its price as 27 boxes minus 5%, so it can be a few coins off. Event seeds can’t be bought.</p>
 </section>
 
-</main>
+<section id="t4" class="hidden" role="tabpanel">
+<h2>Auction</h2>
+<p>A player auction house is planned. Players will make an account, link their Roblox account, and list or bid on items, so every auction can be tied to a real, verified player.</p>
+<ul class="note">
+<li>Accounts kept in a private database</li>
+<li>Roblox account linking</li>
+<li>Tracked listings and bids, so auctions stay organized and fair</li>
+</ul>
+<p class="note">None of this exists yet. There is no sign-up, so please don’t share any login details anywhere claiming to be this site. I’ll announce it on the Discord once it’s ready.</p>
+<span class="stamp">COMING SOON</span>
+</section>
+
+<section id="t5" class="hidden" role="tabpanel">
+<h2>Giveaways</h2>
+<p>Giveaways will run through my Discord. The server isn’t open to join yet, so check back later.</p>
+<span class="stamp">COMING SOON</span>
+</section>
+
+<section id="t6" class="hidden" role="tabpanel">
+<h2>Discord</h2>
+<p>The community Discord is still being set up. Giveaways, price updates and suggestions will live there, but nobody can join yet.</p>
+<span class="stamp">COMING SOON</span>
+</section>
+
+<section id="t7" class="hidden" role="tabpanel">
+<h2>Contact</h2>
+<p>Wrong price, missing item, or a bug? Message me on Discord: <b class="mono">@pxd8</b></p>
+</section>
+</div>
 <footer>
-<p class="note">Fan-made tool, not affiliated with Dunn Games or Roblox. Prices are snapshots from the in-game boards (sell values) and a community wiki (seed costs, updated September 2026), so they can change after game updates. This page is a single static file: no tracking, no sign-in, no forms and no outside requests.</p>
+<p class="note">Fan-made, not affiliated with Dunn Games or Roblox. Seed prices, grow times and sell ranges were checked against the Farming and Friends Fandom wiki. Sheep and wool details come from a fan guide. Prices are snapshots and can change with updates. Right now there is no tracking, no sign-in and no outside requests. Auction accounts are planned for later. The only thing saved is your theme choice, in your own browser.</p>
 </footer>
 
 <script>
 "use strict";
-// [name, price, seed box cost, grow minutes]
-const CROPS=[["Wheat",3,100,1],["Corn",8,250,2.5],["Rice",49,2000,8],["Oat",56,2200,8],["Cocoa",161],["Sugar Cane",209,8400,22],["Soybean",551,24000,36],["Tomato",612,26400,36.3],["Cabbage",1065,57600,60],["Carrot",1911,85000,40],["Grape",1991,105000],["Potato",2244,120000,40]];
+// [name, price, seed box cost, grow minutes, equipment, wiki average, wiki max]
+const CROPS=[["Wheat",3,100,1,"Any",3,4],["Corn",8,250,2.5,"",9,12],["Rice",49,2000,8,"Level 1",52,65],["Oat",56,2200,8],["Cocoa",161],["Sugar Cane",209,8400,22],["Soybean",551,24000,36.3,"",543,680],["Tomato",612,26400,36,"Any",611,769],["Cabbage",1065,57600,60,"Any",1278,1603],["Carrot",1911,85000,40,"Level 4",1770],["Grape",1991,105000,16.5,"Level 3 grape gear, trellis"],["Potato",2244,120000,40,"Level 4-5 seeder and harvester",2469,3125]];
 const GROUPS=[
 ["Crops",CROPS],
 ["Liquids",[["Spoiled",28],["Regular",280],["Free-Range",542],["Honey",9935],["Grape Juice",13687],["Chocolate",21298]]],
-["Products",[["Egg Box",548],["Cheese",1106],["Square Hay Bale",1229],["Scrambled Egg",2191],["Wool Bundle",2477],["Honey Oatmeal",3053],["Pizza",4130],["Round Hay Bale",4236],["Shirt Box",6364],["Cake",7267]]],
+["Animal products and wool",[["Egg Box",548],["Cheese",1106],["Scrambled Egg",2191],["Wool Bundle",2477],["Honey Oatmeal",3053],["Pizza",4130],["Shirt Box",6364],["Cake",7267]]],
+["Hay",[["Square Hay Bale",1229],["Round Hay Bale",4236]]],
 ["Logs and planks",[["Pine",43],["Balsam",160],["Cocoa Log",1394],["Cypress",3236],["Birch",6379],["Cypress Plank",7357],["Birch Plank",11444]]]
 ];
+// [type, item, cost (null = unknown), note]
 const SHOP=[
-["Grape seed box",105000,"N/A"],
-["Cocoa tree seeds (50 trees)",70000,"Also seen on the lumber shelf"],
-["Tree seed box (type N/A)",600,"N/A"],
-["Tree seed box (type N/A)",600,"N/A"],
-["Tree seed box (type N/A)",150000,"N/A"],
-["Tree seed box (type N/A)",210000,"N/A"],
-["Sheep",3000,"Needs Sheep License (about 7,200 XP)"],
-["Chocolate Milk Factory",50000,"Build menu"],
-["Oxbo3220 harvester",140000,"About this much, for cocoa pods"],
-["Animal limit",null,"32 by default, 52 with the More Animals pass"]
+["Tree","Pine seed box",600,"Wood N Stuff, grows 12 min"],
+["Tree","Cocoa seed box (50 trees)",70000,"Wood N Stuff, grows 32 min"],
+["Tree","Cypress seed box",150000,"Wood N Stuff, grows 38 min"],
+["Tree","Birch seed box",210000,"Wood N Stuff, grows 55 min"],
+["Animal","Sheep",3000,"AnimalCo. Needs Sheep License (about 7,200 XP), trailer, fence, feeder, food and shears"],
+["Animal","Animal limit",null,"32 by default, 52 with the More Animals pass"],
+["Machine","Chocolate Milk Factory",50000,"Build menu"],
+["Machine","Oxbo3220 harvester",140000,"About this much, for cocoa pods"],
+["Machine","Level 2+ seeder",null,"Needed for soybean, tomato and cocoa seeds"],
+["Machine","Spindel (wool)",null,"5 wool = 1 bundle, holds 10 wool (2 bundles)"],
+["Machine","Sawmill",null,"Turns logs into planks, needs an unlock"]
 ];
 const $=id=>document.getElementById(id);
 const fmt=n=>isFinite(n)?Math.round(n).toLocaleString("en-US"):"0";
 const num=v=>{v=Number(v);return isFinite(v)&&v>0?Math.min(v,1e12):0};
 function el(tag,text,parent,cls){const e=document.createElement(tag);if(text!==undefined&&text!==null)e.textContent=text;if(cls)e.className=cls;if(parent)parent.appendChild(e);return e}
-function numInput(parent,val){const td=el("td",null,parent);const i=el("input",null,td);i.type="number";i.min="0";i.value=val;return i}
+function numInput(parent,val,label){const td=el("td",null,parent);const i=el("input",null,td);i.type="number";i.min="0";i.step="any";i.value=val;i.setAttribute("aria-label",label);return i}
+const sign=(e,v)=>{e.textContent=(v>0?"+":"")+fmt(v);e.className=v>0?"pos":v<0?"neg":""};
+
+// theme
+const root=document.documentElement;
+function setTheme(t,save){root.setAttribute("data-theme",t);if(save){try{localStorage.setItem("ff-theme",t)}catch(e){}}}
+let saved=null;try{saved=localStorage.getItem("ff-theme")}catch(e){}
+setTheme(saved==="light"||saved==="dark"?saved:(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"),false);
+$("theme").onclick=()=>setTheme(root.getAttribute("data-theme")==="dark"?"light":"dark",true);
 
 // tabs
-const TABS=["Sell calculator","Best crops","Chocolate milk","Shop prices"];
-TABS.forEach((t,i)=>{const b=el("button",t,$("nav"));b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);b.onclick=()=>{TABS.forEach((_,j)=>{$("t"+j).classList.toggle("hidden",j!==i);$("nav").children[j].setAttribute("aria-selected",j===i)})}});
+const TABS=[["Sell"],["Best crops"],["Chocolate milk"],["Shop"],["Auction",1],["Giveaway",1],["Discord",1],["Contact"]];
+TABS.forEach(([t,w],i)=>{const b=el("button",t,$("nav"),w?"wip":"");b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);b.onclick=()=>{TABS.forEach((_,j)=>{$("t"+j).classList.toggle("hidden",j!==i);$("nav").children[j].setAttribute("aria-selected",j===i)})}});
 
 // sell calculator
-const P={},Q={},T={};
+const P={},C={},Q={},R={},F={};
 GROUPS.forEach(([g,items])=>{
   el("h3",g,$("sell"));
-  const w=el("div",null,$("sell"),"scroll"),tb=el("table",null,w),h=el("thead",null,tb),hr=el("tr",null,h);
-  ["Item","Price each","How many","Total"].forEach(x=>el("th",x,hr));
+  const w=el("div",null,$("sell"),"scroll"),tb=el("table",null,w),hr=el("tr",null,el("thead",null,tb));
+  ["Item","Sell price","Buy price","How many","Est. revenue","Est. profit"].forEach(x=>el("th",x,hr));
   const body=el("tbody",null,tb);
   items.forEach(it=>{
-    const tr=el("tr",null,body);el("td",it[0],tr);
-    const key=it[0];P[key]=numInput(tr,it[1]);Q[key]=numInput(tr,0);T[key]=el("td","0",tr);
-    P[key].oninput=Q[key].oninput=update;
+    const k=it[0],tr=el("tr",null,body);el("td",k,tr);
+    P[k]=numInput(tr,it[1],k+" sell price");
+    C[k]=numInput(tr,g==="Crops"&&it[2]?+(it[2]/50).toFixed(2):0,k+" buy price");
+    Q[k]=numInput(tr,0,k+" amount sold");
+    R[k]=el("td","0",tr);F[k]=el("td","0",tr);
+    P[k].oninput=C[k].oninput=Q[k].oninput=update;
   });
 });
-$("club").onchange=update;
-$("units").oninput=update;$("jugs").oninput=update;$("milk").onchange=update;
+["club","group","units","jugs"].forEach(i=>$(i).oninput=update);
+$("club").onchange=$("group").onchange=$("milk").onchange=update;
 const price=k=>num(P[k].value);
+const bonus=()=>($("club").checked?.10:0)+($("group").checked?.05:0);
 
 function update(){
-  let crop=0,other=0;
+  let rev=0,bon=0,cost=0;const b=bonus();
   GROUPS.forEach(([g,items])=>items.forEach(it=>{
-    const t=price(it[0])*num(Q[it[0]].value);T[it[0]].textContent=fmt(t);
-    if(g==="Crops")crop+=t;else other+=t;
+    const k=it[0],q=num(Q[k].value),base=price(k)*q,extra=g==="Crops"?base*b:0,c=num(C[k].value)*q;
+    rev+=base+extra;bon+=extra;cost+=c;
+    R[k].textContent=fmt(base+extra);sign(F[k],base+extra-c);
   }));
-  if($("club").checked)crop*=1.05;
-  $("s-crop").textContent=fmt(crop);$("s-other").textContent=fmt(other);$("s-all").textContent=fmt(crop+other);
+  const prof=rev-cost;
+  $("s-rev").textContent=fmt(rev);$("s-bon").textContent=fmt(bon);$("s-cost").textContent=fmt(cost);
+  sign($("s-prof"),prof);
+  $("s-mar").textContent=rev>0?(Math.round(prof/rev*1000)/10)+"%":"0%";
   ranking();chocolate();
 }
 
 function ranking(){
-  const u=num($("units").value)||50,rows=[];
-  CROPS.forEach(c=>{if(c[2]===undefined)return;const net=price(c[0])*u-c[2];rows.push([c[0],c[2],c[3],net,c[3]?net/c[3]:null])});
-  rows.sort((a,b)=>b[4]-a[4]);
+  const u=num($("units").value)||50,b=bonus(),rows=[];
+  CROPS.forEach(c=>{if(c[2]===undefined)return;const net=price(c[0])*u*(1+b)-c[2];rows.push([c[0],c[2],c[3],net,c[3]?net/c[3]:null,c[4]])});
+  rows.sort((a,b)=>(a[4]===null)-(b[4]===null)||(b[4]??0)-(a[4]??0));
   const tb=$("rank");tb.textContent="";
-  rows.forEach(r=>{const tr=el("tr",null,tb);[r[0],fmt(r[1]),r[2]===undefined?"N/A":r[2],fmt(r[3]),r[4]===null||r[4]===undefined?"N/A":(Math.round(r[4]*10)/10).toLocaleString("en-US")].forEach(v=>el("td",v,tr))});
+  rows.forEach(r=>{const tr=el("tr",null,tb);[r[0],fmt(r[1]),r[2]===undefined?"N/A":r[2],fmt(r[3]),r[4]===null?"N/A":(Math.round(r[4]*10)/10).toLocaleString("en-US"),r[5]||"-"].forEach(v=>el("td",v,tr))})
 }
 
 function chocolate(){
   const j=Math.floor(num($("jugs").value)),per=+$("milk").value;
   const milkP=price(per===10?"Regular":"Free-Range"),sale=j*price("Chocolate");
-  const raw=j*(25*price("Cocoa")+per*milkP),extra=sale-raw;
+  const raw=j*(25*price("Cocoa")*(1+bonus())+per*milkP),extra=sale-raw;
   const out=$("choc");out.textContent="";
-  [["Cocoa needed",fmt(j*25)],["Milk jugs needed",fmt(j*per)],["Factory runs",Math.ceil(j/60)],["Sale total",fmt(sale)],["Ingredients if sold raw",fmt(raw)],["Extra from the factory",fmt(extra),1],["Runs to repay 260,000 setup",extra>0?Math.ceil(260000/extra):"-"]].forEach(([l,v,hi])=>{const d=el("div",null,out,hi?"hi":"");el("span",l,d);el("b",v,d)});
+  [["Cocoa needed",fmt(j*25)],["Milk jugs needed",fmt(j*per)],["Factory runs",Math.ceil(j/60)],["Est. chocolate sale",fmt(sale)],["Est. value if sold raw",fmt(raw)],["Est. extra from factory",fmt(extra),1],["Runs to repay 260,000",extra>0?Math.ceil(260000/extra):"-"]].forEach(([l,v,hi])=>{const d=el("div",null,out,"row"+(hi?" tot":""));el("span",l,d);el("i",null,d);el("b",v,d)});
 }
 
-// shop
-SHOP.forEach(r=>{const tr=el("tr",null,$("shop"));el("td",r[0],tr);el("td",r[1]===null?"-":fmt(r[1]),tr);const n=el("td",r[2],tr);n.style.textAlign="left"});
+// shop: every crop seed box is generated from the crop list so nothing is missed
+const ALL=[...CROPS.filter(c=>c[2]).map(c=>["Seed box",c[0]+" seed box",c[2],(c[3]?"Grows "+c[3]+" min":"Grow time N/A")+", pallet about "+fmt(c[2]*27*.95)]),...SHOP];
+const cats=["All",...new Set(ALL.map(r=>r[0]))];
+cats.forEach(c=>{const o=el("option",c,$("cat"));o.value=c});
+function shop(){
+  const tb=$("shop");tb.textContent="";const f=$("cat").value;
+  ALL.filter(r=>f==="All"||r[0]===f).forEach(r=>{const tr=el("tr",null,tb);el("td",r[1],tr);el("td",r[0],tr,"l");el("td",r[2]===null?"?":fmt(r[2]),tr);el("td",r[3],tr,"l")})
+}
+$("avg").onclick=()=>{CROPS.forEach(c=>{if(c[5])P[c[0]].value=c[5]});update()};
+$("max").onclick=()=>{CROPS.forEach(c=>{if(c[6])P[c[0]].value=c[6]});update()};
+$("cat").onchange=shop;shop();
 update();
 </script>
 </body>
