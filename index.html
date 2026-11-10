@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Farming and Friends Calculator</title>
+<meta name="description" content="Sell value calculator, best crop ranking and chocolate milk planner for the Roblox game Farming and Friends.">
+<style>
+:root{--bg:#e9f0e1;--card:#fbfdf8;--ink:#1f2a1c;--mute:#566650;--green:#2d6a3e;--gold:#a8760f;--line:#cdd9c2;--soft:#f0f6ea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-rounded,"Nunito","Trebuchet MS",system-ui,sans-serif}
+header{background:var(--green);color:#f3f8ee;padding:24px 20px}
+header h1{margin:0;font-size:clamp(1.5rem,5vw,2.3rem);letter-spacing:-.01em}
+header p{margin:6px 0 0;max-width:62ch;color:#d3e6cd}
+nav{display:flex;gap:6px;flex-wrap:wrap;max-width:940px;margin:16px auto 0;padding:0 20px}
+nav button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--green);color:#fff;border-color:var(--green)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+main{max-width:940px;margin:0 auto;padding:16px 20px 24px}
+.tab{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.hidden{display:none}
+h2{margin:0 0 6px;font-size:1.25rem}
+h3{margin:20px 0 6px;font-size:1.02rem;color:var(--green)}
+.note{color:var(--mute);font-size:.88rem;margin:6px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:10px}
+label{display:grid;gap:4px;font-size:.88rem;color:var(--mute)}
+input,select{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+td input{max-width:120px;text-align:right}
+.check{display:flex;align-items:center;gap:8px;color:var(--ink);margin-top:10px}
+.check input{width:auto}
+.bar{position:sticky;top:0;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;z-index:2}
+.bar b{color:var(--gold);font-size:1.25rem}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.out div{background:var(--soft);border-radius:10px;padding:9px 12px}
+.out span{display:block;font-size:.8rem;color:var(--mute)}
+.out b{font-size:1.15rem;color:var(--green)}
+.out .hi b{color:var(--gold)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:480px}
+th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.82rem;color:var(--mute);font-weight:600}
+footer{max-width:940px;margin:0 auto;padding:0 20px 30px}
+</style>
+</head>
+<body>
+<header>
+<h1>Farming and Friends Calculator</h1>
+<p>Type what you have, see what it sells for. Prices change in game, so every price below can be edited.</p>
+</header>
+<nav id="nav" role="tablist"></nav>
+<main>
+
+<section class="tab" id="t0">
+<h2>Sell calculator</h2>
+<p class="note">Prices start at the values seen on the in-game sell boards. Edit a price to match the board you see, enter how many you have, and the total updates.</p>
+<label class="check"><input id="club" type="checkbox"> Farmer’s Club member (+5% on crop sales)</label>
+<div class="bar"><span>Crops <b id="s-crop">0</b></span><span>Everything else <b id="s-other">0</b></span><span>Total <b id="s-all">0</b></span></div>
+<div id="sell"></div>
+</section>
+
+<section class="tab hidden" id="t1">
+<h2>Best crops</h2>
+<p class="note">Ranked by profit per minute using the prices from the sell calculator. A seed box plants about 50 seeds.</p>
+<div class="grid"><label>Crops per seed box<input id="units" type="number" min="1" value="50"></label></div>
+<div class="scroll"><table><thead><tr><th>Crop</th><th>Seed box</th><th>Grow (min)</th><th>Net per box</th><th>Profit per min</th></tr></thead><tbody id="rank"></tbody></table></div>
+<p class="note">Grape growth time is N/A, so Grape can’t be ranked. Sell prices swing between low and high, so check the board before you plant.</p>
+</section>
+
+<section class="tab hidden" id="t2">
+<h2>Chocolate milk planner</h2>
+<div class="grid">
+<label>Jugs to make<input id="jugs" type="number" min="1" value="60"></label>
+<label>Milk type<select id="milk"><option value="10">Regular (10 per jug)</option><option value="5">Free-range (5 per jug)</option></select></label>
+</div>
+<div class="out" id="choc"></div>
+<p class="note">Each jug needs 25 cocoa plus milk, and a full factory run makes up to 60 jugs. Cocoa, milk and chocolate prices come from the sell calculator. Setup (factory 50,000, cocoa trees 70,000, Oxbo3220 about 140,000) is roughly 260,000 before barns and cows.</p>
+</section>
+
+<section class="tab hidden" id="t3">
+<h2>Shop prices</h2>
+<div class="scroll"><table><thead><tr><th>Item</th><th>Cost</th><th>Notes</th></tr></thead><tbody id="shop"></tbody></table></div>
+<p class="note">Costs without a source note come from in-game shop screenshots.</p>
+</section>
+
+</main>
+<footer>
+<p class="note">Fan-made tool, not affiliated with Dunn Games or Roblox. Prices are snapshots from the in-game boards (sell values) and a community wiki (seed costs, updated September 2026), so they can change after game updates. This page is a single static file: no tracking, no sign-in, no forms and no outside requests.</p>
+</footer>
+
+<script>
+"use strict";
+// [name, price, seed box cost, grow minutes]
+const CROPS=[["Wheat",3,100,1],["Corn",8,250,2.5],["Rice",49,2000,8],["Oat",56,2200,8],["Cocoa",161],["Sugar Cane",209,8400,22],["Soybean",551,24000,36],["Tomato",612,26400,36.3],["Cabbage",1065,57600,60],["Carrot",1911,85000,40],["Grape",1991,105000],["Potato",2244,120000,40]];
+const GROUPS=[
+["Crops",CROPS],
+["Liquids",[["Spoiled",28],["Regular",280],["Free-Range",542],["Honey",9935],["Grape Juice",13687],["Chocolate",21298]]],
+["Products",[["Egg Box",548],["Cheese",1106],["Square Hay Bale",1229],["Scrambled Egg",2191],["Wool Bundle",2477],["Honey Oatmeal",3053],["Pizza",4130],["Round Hay Bale",4236],["Shirt Box",6364],["Cake",7267]]],
+["Logs and planks",[["Pine",43],["Balsam",160],["Cocoa Log",1394],["Cypress",3236],["Birch",6379],["Cypress Plank",7357],["Birch Plank",11444]]]
+];
+const SHOP=[
+["Grape seed box",105000,"N/A"],
+["Cocoa tree seeds (50 trees)",70000,"Also seen on the lumber shelf"],
+["Tree seed box (type N/A)",600,"N/A"],
+["Tree seed box (type N/A)",600,"N/A"],
+["Tree seed box (type N/A)",150000,"N/A"],
+["Tree seed box (type N/A)",210000,"N/A"],
+["Sheep",3000,"Needs Sheep License (about 7,200 XP)"],
+["Chocolate Milk Factory",50000,"Build menu"],
+["Oxbo3220 harvester",140000,"About this much, for cocoa pods"],
+["Animal limit",null,"32 by default, 52 with the More Animals pass"]
+];
+const $=id=>document.getElementById(id);
+const fmt=n=>isFinite(n)?Math.round(n).toLocaleString("en-US"):"0";
+const num=v=>{v=Number(v);return isFinite(v)&&v>0?Math.min(v,1e12):0};
+function el(tag,text,parent,cls){const e=document.createElement(tag);if(text!==undefined&&text!==null)e.textContent=text;if(cls)e.className=cls;if(parent)parent.appendChild(e);return e}
+function numInput(parent,val){const td=el("td",null,parent);const i=el("input",null,td);i.type="number";i.min="0";i.value=val;return i}
+
+// tabs
+const TABS=["Sell calculator","Best crops","Chocolate milk","Shop prices"];
+TABS.forEach((t,i)=>{const b=el("button",t,$("nav"));b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);b.onclick=()=>{TABS.forEach((_,j)=>{$("t"+j).classList.toggle("hidden",j!==i);$("nav").children[j].setAttribute("aria-selected",j===i)})}});
+
+// sell calculator
+const P={},Q={},T={};
+GROUPS.forEach(([g,items])=>{
+  el("h3",g,$("sell"));
+  const w=el("div",null,$("sell"),"scroll"),tb=el("table",null,w),h=el("thead",null,tb),hr=el("tr",null,h);
+  ["Item","Price each","How many","Total"].forEach(x=>el("th",x,hr));
+  const body=el("tbody",null,tb);
+  items.forEach(it=>{
+    const tr=el("tr",null,body);el("td",it[0],tr);
+    const key=it[0];P[key]=numInput(tr,it[1]);Q[key]=numInput(tr,0);T[key]=el("td","0",tr);
+    P[key].oninput=Q[key].oninput=update;
+  });
+});
+$("club").onchange=update;
+$("units").oninput=update;$("jugs").oninput=update;$("milk").onchange=update;
+const price=k=>num(P[k].value);
+
+function update(){
+  let crop=0,other=0;
+  GROUPS.forEach(([g,items])=>items.forEach(it=>{
+    const t=price(it[0])*num(Q[it[0]].value);T[it[0]].textContent=fmt(t);
+    if(g==="Crops")crop+=t;else other+=t;
+  }));
+  if($("club").checked)crop*=1.05;
+  $("s-crop").textContent=fmt(crop);$("s-other").textContent=fmt(other);$("s-all").textContent=fmt(crop+other);
+  ranking();chocolate();
+}
+
+function ranking(){
+  const u=num($("units").value)||50,rows=[];
+  CROPS.forEach(c=>{if(c[2]===undefined)return;const net=price(c[0])*u-c[2];rows.push([c[0],c[2],c[3],net,c[3]?net/c[3]:null])});
+  rows.sort((a,b)=>b[4]-a[4]);
+  const tb=$("rank");tb.textContent="";
+  rows.forEach(r=>{const tr=el("tr",null,tb);[r[0],fmt(r[1]),r[2]===undefined?"N/A":r[2],fmt(r[3]),r[4]===null||r[4]===undefined?"N/A":(Math.round(r[4]*10)/10).toLocaleString("en-US")].forEach(v=>el("td",v,tr))});
+}
+
+function chocolate(){
+  const j=Math.floor(num($("jugs").value)),per=+$("milk").value;
+  const milkP=price(per===10?"Regular":"Free-Range"),sale=j*price("Chocolate");
+  const raw=j*(25*price("Cocoa")+per*milkP),extra=sale-raw;
+  const out=$("choc");out.textContent="";
+  [["Cocoa needed",fmt(j*25)],["Milk jugs needed",fmt(j*per)],["Factory runs",Math.ceil(j/60)],["Sale total",fmt(sale)],["Ingredients if sold raw",fmt(raw)],["Extra from the factory",fmt(extra),1],["Runs to repay 260,000 setup",extra>0?Math.ceil(260000/extra):"-"]].forEach(([l,v,hi])=>{const d=el("div",null,out,hi?"hi":"");el("span",l,d);el("b",v,d)});
+}
+
+// shop
+SHOP.forEach(r=>{const tr=el("tr",null,$("shop"));el("td",r[0],tr);el("td",r[1]===null?"-":fmt(r[1]),tr);const n=el("td",r[2],tr);n.style.textAlign="left"});
+update();
+</script>
+</body>
+</html>
