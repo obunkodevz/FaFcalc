@@ -16,6 +16,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
+a{color:var(--red)}
 .mono,td input,.row b,.row span,th{font-family:"Courier New",Courier,monospace}
 header{position:relative;min-height:240px;background:#0c0f09;overflow:hidden}
 .scene{position:absolute;inset:0;width:100%;height:100%}
@@ -147,25 +148,25 @@ footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 <li>Roblox account linking</li>
 <li>Tracked listings and bids, so auctions stay organized and fair</li>
 </ul>
-<p class="note">None of this exists yet. There is no sign-up, so please don’t share any login details anywhere claiming to be this site. I’ll announce it on the Discord once it’s ready.</p>
+<p class="note">None of this exists yet. There is no sign-up, so please don’t share any login details anywhere claiming to be this site. I’ll announce it on the <a href="https://discord.gg/kSbsuuBG4X" target="_blank" rel="noopener noreferrer">Discord</a> once it’s ready.</p>
 <span class="stamp">COMING SOON</span>
 </section>
 
 <section id="t5" class="hidden" role="tabpanel">
 <h2>Giveaways</h2>
-<p>Giveaways will run through my Discord. The server isn’t open to join yet, so check back later.</p>
-<span class="stamp">COMING SOON</span>
+<p>Giveaways will run through my Discord. <a href="https://discord.gg/kSbsuuBG4X" target="_blank" rel="noopener noreferrer">Join the server</a> to be first to hear when they start.</p>
+<span class="stamp">Join now!</span>
 </section>
 
 <section id="t6" class="hidden" role="tabpanel">
 <h2>Discord</h2>
-<p>The community Discord is still being set up. Giveaways, price updates and suggestions will live there, but nobody can join yet.</p>
-<span class="stamp">COMING SOON</span>
+<p>The community Discord is open. Giveaways, price updates and suggestions all live there.</p>
+<p><a href="https://discord.gg/kSbsuuBG4X" target="_blank" rel="noopener noreferrer">Join the Discord</a></p>
 </section>
 
 <section id="t7" class="hidden" role="tabpanel">
 <h2>Contact</h2>
-<p>Wrong price, missing item, or a bug? Message me on Discord: <b class="mono">@pxd8</b></p>
+<p>Wrong price, missing item, or a bug? Message me on Discord: <b class="mono">@pxd8</b>, or join the <a href="https://discord.gg/kSbsuuBG4X" target="_blank" rel="noopener noreferrer">server</a>.</p>
 </section>
 </div>
 <footer>
@@ -212,7 +213,7 @@ setTheme(saved==="light"||saved==="dark"?saved:(matchMedia("(prefers-color-schem
 $("theme").onclick=()=>setTheme(root.getAttribute("data-theme")==="dark"?"light":"dark",true);
 
 // tabs
-const TABS=[["Sell"],["Best crops"],["Chocolate milk"],["Shop"],["Auction",1],["Giveaway",1],["Discord",1],["Contact"]];
+const TABS=[["Sell"],["Best crops"],["Chocolate milk"],["Shop"],["Auction",1],["Giveaway",1],["Discord"],["Contact"]];
 TABS.forEach(([t,w],i)=>{const b=el("button",t,$("nav"),w?"wip":"");b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);b.onclick=()=>{TABS.forEach((_,j)=>{$("t"+j).classList.toggle("hidden",j!==i);$("nav").children[j].setAttribute("aria-selected",j===i)})}});
 
 // sell calculator
