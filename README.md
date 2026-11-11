@@ -1,2 +1,2 @@
-# Farming-and-Friends_Calculator.github.io
+# FaFcalc
 All in one calculator for farming and friends on roblox.
