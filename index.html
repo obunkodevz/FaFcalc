@@ -58,6 +58,7 @@ input,select{font:inherit;color:var(--ink);background:transparent;border:0;borde
 input[type=checkbox]{width:17px;height:17px;accent-color:var(--red)}
 select{background:var(--paper)}
 td input{max-width:96px;text-align:right;font-size:.92rem}
+input[readonly]{color:var(--mute);cursor:not-allowed;border-bottom-style:dotted}
 td input:focus{background:color-mix(in srgb,var(--red) 12%,transparent)}
 .scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%;min-width:540px}
@@ -72,6 +73,16 @@ td.l{font-size:.88rem;color:var(--mute)}
 .pos{color:var(--good)}.neg{color:var(--bad)}
 .stamp{display:inline-block;font:700 .95rem "Courier New",monospace;letter-spacing:.2em;color:var(--red);border:2px solid var(--red);padding:2px 10px;transform:rotate(-3deg);opacity:.85;margin-top:18px}
 .mute{color:var(--mute)}
+#dc{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.6)}
+#dc[hidden]{display:none}
+.dcbox{width:100%;max-width:380px;background:var(--paper);color:var(--ink);border:2px solid var(--ink);padding:20px 20px 16px;box-shadow:6px 6px 0 var(--red)}
+.dcbox h2{margin:0 0 8px;font-size:1.4rem}
+.dcbox p{margin:0 0 14px}
+.dcbtns{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.dcbtns a,.dcbtns button{font:inherit;font-size:.98rem;padding:6px 18px;cursor:pointer;text-decoration:none;text-align:center;border:2px solid var(--ink)}
+.dcbtns a{background:var(--red);color:var(--paper);border-color:var(--red);font-weight:700}
+.dcbtns button{background:none;color:var(--ink)}
+.dcbox label{display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--mute)}
 footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 </style>
 </head>
@@ -100,7 +111,7 @@ footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 
 <section id="t0" role="tabpanel">
 <h2>Sell calculator</h2>
-<p class="note">Sell price is what the board pays you. Buy price is what each one cost you, and crops start at seed box ÷ 50. Everything marked “Est.” is an estimate, because board prices keep moving, about every 5 minutes. A rainbow price means the crop is at its max. The wiki average and max buttons only fill the crops that have wiki numbers.</p>
+<p class="note">Sell price is what the board pays you. For crops and trees, type how many seed boxes you bought. Each box costs its shop price (shown next to the name, like Potato at 120,000 per box) and that adds to your buy price. Boxes are whole numbers. Everything else is grown or made, not bought, so it shows “-”. Cocoa and Cocoa Log both come from the same cocoa tree box, so only enter boxes on one of them. Everything marked “Est.” is an estimate, because board prices keep moving, about every 5 minutes. A rainbow price means the crop is at its max. The wiki average and max buttons only fill the crops that have wiki numbers.</p>
 <div class="opts">
 <label><input id="club" type="checkbox"> Farmer’s Club (+10%)</label>
 <label><input id="group" type="checkbox"> Group member (+5%)</label>
@@ -170,8 +181,20 @@ footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 </section>
 </div>
 <footer>
-<p class="note">Fan-made, not affiliated with Dunn Games or Roblox. Seed prices, grow times and sell ranges were checked against the Farming and Friends Fandom wiki. Sheep and wool details come from a fan guide. Prices are snapshots and can change with updates. Right now there is no tracking, no sign-in and no outside requests. Auction accounts are planned for later. The only thing saved is your theme choice, in your own browser.</p>
+<p class="note">Fan-made, not affiliated with Dunn Games or Roblox. Seed prices, grow times and sell ranges were checked against the Farming and Friends Fandom wiki. Sheep and wool details come from a fan guide. Prices are snapshots and can change with updates. Right now there is no tracking, no sign-in and no outside requests. Auction accounts are planned for later. The only things saved are your theme choice and whether you dismissed the Discord pop-up, in your own browser.</p>
 </footer>
+
+<div id="dc" hidden>
+<div class="dcbox" role="dialog" aria-modal="true" aria-labelledby="dc-t">
+<h2 id="dc-t">Join our Discord</h2>
+<p>For updates, announcements and giveaways please join our discord.</p>
+<div class="dcbtns">
+<a id="dc-join" href="https://discord.gg/kSbsuuBG4X" target="_blank" rel="noopener noreferrer">Join</a>
+<button id="dc-deny" type="button">Deny</button>
+</div>
+<label><input id="dc-save" type="checkbox"> Save option (don’t show this again)</label>
+</div>
+</div>
 
 <script>
 "use strict";
@@ -198,6 +221,10 @@ const SHOP=[
 ["Machine","Spindel (wool)",null,"5 wool = 1 bundle, holds 10 wool (2 bundles)"],
 ["Machine","Sawmill",null,"Turns logs into planks, needs an unlock"]
 ];
+// price of ONE seed box, same as the shop: crops from the crop list, trees from Wood N Stuff
+const BOX={};
+CROPS.forEach(c=>{if(c[2])BOX[c[0]]=c[2]});
+Object.assign(BOX,{"Cocoa":70000,"Pine":600,"Cocoa Log":70000,"Cypress":150000,"Birch":210000});
 const $=id=>document.getElementById(id);
 const fmt=n=>isFinite(n)?Math.round(n).toLocaleString("en-US"):"0";
 const num=v=>{v=Number(v);return isFinite(v)&&v>0?Math.min(v,1e12):0};
@@ -213,7 +240,7 @@ setTheme(saved==="light"||saved==="dark"?saved:(matchMedia("(prefers-color-schem
 $("theme").onclick=()=>setTheme(root.getAttribute("data-theme")==="dark"?"light":"dark",true);
 
 // tabs
-const TABS=[["Sell"],["Best crops"],["Chocolate milk"],["Shop"],["Auction",1],["Giveaway",1],["Discord"],["Contact"]];
+const TABS=[["Sell"],["Best crops"],["Chocolate milk"],["Shop"],["Auction",1],["Giveaway"],["Discord"],["Contact"]];
 TABS.forEach(([t,w],i)=>{const b=el("button",t,$("nav"),w?"wip":"");b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);b.onclick=()=>{TABS.forEach((_,j)=>{$("t"+j).classList.toggle("hidden",j!==i);$("nav").children[j].setAttribute("aria-selected",j===i)})}});
 
 // sell calculator
@@ -221,15 +248,18 @@ const P={},C={},Q={},R={},F={};
 GROUPS.forEach(([g,items])=>{
   el("h3",g,$("sell"));
   const w=el("div",null,$("sell"),"scroll"),tb=el("table",null,w),hr=el("tr",null,el("thead",null,tb));
-  ["Item","Sell price","Buy price","How many","Est. revenue","Est. profit"].forEach(x=>el("th",x,hr));
+  ["Item","Sell price","Boxes","How many","Est. revenue","Est. profit"].forEach(x=>el("th",x,hr));
   const body=el("tbody",null,tb);
   items.forEach(it=>{
-    const k=it[0],tr=el("tr",null,body);el("td",k,tr);
+    const k=it[0],tr=el("tr",null,body),nameTd=el("td",k,tr);
+    if(BOX[k])el("span"," · "+fmt(BOX[k])+" / box",nameTd,"mute");
     P[k]=numInput(tr,it[1],k+" sell price");
-    C[k]=numInput(tr,g==="Crops"&&it[2]?+(it[2]/50).toFixed(2):0,k+" buy price");
+    if(BOX[k]){
+      C[k]=numInput(tr,0,k+" boxes");C[k].step="1";C[k].oninput=update;
+    }else{C[k]={value:0};el("td","-",tr,"mute")}
     Q[k]=numInput(tr,0,k+" amount sold");
     R[k]=el("td","0",tr);F[k]=el("td","0",tr);
-    P[k].oninput=C[k].oninput=Q[k].oninput=update;
+    P[k].oninput=Q[k].oninput=update;
   });
 });
 ["club","group","units","jugs"].forEach(i=>$(i).oninput=update);
@@ -240,7 +270,7 @@ const bonus=()=>($("club").checked?.10:0)+($("group").checked?.05:0);
 function update(){
   let rev=0,bon=0,cost=0;const b=bonus();
   GROUPS.forEach(([g,items])=>items.forEach(it=>{
-    const k=it[0],q=num(Q[k].value),base=price(k)*q,extra=g==="Crops"?base*b:0,c=num(C[k].value)*q;
+    const k=it[0],q=num(Q[k].value),base=price(k)*q,extra=g==="Crops"?base*b:0,c=Math.floor(num(C[k].value))*(BOX[k]||0);
     rev+=base+extra;bon+=extra;cost+=c;
     R[k].textContent=fmt(base+extra);sign(F[k],base+extra-c);
   }));
@@ -279,6 +309,19 @@ $("avg").onclick=()=>{CROPS.forEach(c=>{if(c[5])P[c[0]].value=c[5]});update()};
 $("max").onclick=()=>{CROPS.forEach(c=>{if(c[6])P[c[0]].value=c[6]});update()};
 $("cat").onchange=shop;shop();
 update();
+
+// discord pop-up: Join always saves; Deny only saves if the checkbox is ticked
+(function(){
+  const KEY="ff-discord",box=$("dc");
+  let done=null;try{done=localStorage.getItem(KEY)}catch(e){}
+  if(done)return;
+  const remember=v=>{try{localStorage.setItem(KEY,v)}catch(e){}};
+  const close=()=>{box.hidden=true};
+  $("dc-join").onclick=()=>{remember("joined");close()};
+  $("dc-deny").onclick=()=>{if($("dc-save").checked)remember("denied");close()};
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!box.hidden)$("dc-deny").click()});
+  box.hidden=false;$("dc-join").focus();
+})();
 </script>
 </body>
 </html>
