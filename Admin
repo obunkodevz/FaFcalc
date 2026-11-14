@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'unsafe-inline'; img-src data:; connect-src https://qynuhiomfwsqmndwqwzj.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Admin</title>
+<style>
+:root{--bg:#12150f;--paper:#1c2017;--ink:#e9e2cc;--mute:#9a9378;--red:#e5806a;--rule:#454a38;--good:#8fd08a;--bad:#ff907c;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,serif}
+.wrap{max-width:900px;margin:0 auto;background:var(--paper);min-height:100vh;padding:18px 22px 40px}
+h1{font:italic 700 1.8rem Georgia,serif;margin:4px 0 12px}
+.mute{color:var(--mute)}.ok{color:var(--good)}.bad{color:var(--bad)}.small{font-size:.85rem}
+label{display:grid;gap:2px;margin:10px 0;font-size:.88rem;color:var(--mute);max-width:340px}
+input{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--rule);padding:6px 8px;width:100%}
+button{font:inherit;cursor:pointer;color:var(--ink);background:none;border:1px solid var(--ink);padding:3px 12px}
+button.main{background:var(--red);color:#12150f;border-color:var(--red);font-weight:700;padding:7px 20px}
+button:disabled{opacity:.5}
+.tabs{display:flex;gap:18px;border-bottom:3px double var(--rule);margin:14px 0}
+.tabs button{border:0;border-bottom:2px solid transparent;color:var(--mute);padding:4px 0}
+.tabs button[aria-selected=true]{color:var(--ink);font-weight:700;border-bottom-color:var(--red)}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:520px}
+th{font-size:.75rem;color:var(--mute);text-transform:uppercase;text-align:left;padding:4px 6px;border-bottom:1px solid var(--ink)}
+td{padding:5px 6px;border-bottom:1px dotted var(--rule);font-size:.92rem}
+#qr{background:#fff;width:190px;height:190px;display:block;margin:8px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Admin</h1>
+<p id="msg" class="small" role="status"></p>
+
+<section id="login">
+<label>Email<input id="email" type="email" autocomplete="email"></label>
+<label>Password<input id="pw" type="password" autocomplete="current-password"></label>
+<div id="ts"></div>
+<p><button class="main" id="go" type="button">Log in</button></p>
+</section>
+
+<section id="mfa" hidden>
+<div id="qrwrap" hidden>
+<p>First time: scan this with an authenticator app (Google Authenticator, Aegis, 1Password...), then enter the 6-digit code.</p>
+<img id="qr" alt="Authenticator QR code">
+<p class="small mute">Or type this key in by hand: <span id="secret"></span></p>
+</div>
+<label>Authenticator code<input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+<p><button class="main" id="vf" type="button">Verify</button></p>
+</section>
+
+<section id="dash" hidden>
+<p><span id="me" class="mute small"></span> <button id="out" type="button">Log out</button></p>
+<div class="tabs"><button data-t="users" aria-selected="true">Users</button><button data-t="listings" aria-selected="false">Listings</button><button data-t="audit" aria-selected="false">Audit log</button></div>
+<div class="sc"><table><thead id="head"></thead><tbody id="body"></tbody></table></div>
+</section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+<script>
+"use strict";
+const sb=supabase.createClient("https://qynuhiomfwsqmndwqwzj.supabase.co","sb_publishable_uVz3UHojhFtxJIDDD0j1ow_urHDbtwY");
+const SITEKEY="0x4AAAAAAGAQBK7o_4dt5sMD",$=id=>document.getElementById(id);
+function el(tag,text,parent){const e=document.createElement(tag);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e}
+let token="",wid=null,factorId=null,tab="users";
+const say=(t,bad)=>{$("msg").textContent=t||"";$("msg").className="small "+(bad?"bad":"ok")};
+const show=n=>["login","mfa","dash"].forEach(x=>$(x).hidden=x!==n);
+function captcha(){
+  if(!window.turnstile)return setTimeout(captcha,300);
+  token="";if(wid!==null)return turnstile.reset(wid);
+  wid=turnstile.render("#ts",{sitekey:SITEKEY,callback:t=>{token=t},"expired-callback":()=>{token=""}});
+}
+
+$("go").onclick=async()=>{
+  if(!token)return say("Please complete the captcha.",1);
+  $("go").disabled=true;
+  const {error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("pw").value,options:{captchaToken:token}});
+  $("go").disabled=false;$("pw").value="";
+  if(error){say("Login failed.",1);return captcha()}
+  say("");next();
+};
+
+async function next(){
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user){show("login");return captcha()}
+  const {data:f}=await sb.auth.mfa.listFactors();
+  const ver=(f?.all||[]).find(x=>x.factor_type==="totp"&&x.status==="verified");
+  const {data:a}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(ver){factorId=ver.id;if(a.currentLevel==="aal2")return dash(user);$("qrwrap").hidden=true;return show("mfa")}
+  for(const x of f?.all||[])if(x.status!=="verified")await sb.auth.mfa.unenroll({factorId:x.id});
+  const {data,error}=await sb.auth.mfa.enroll({factorType:"totp"});
+  if(error)return say(error.message,1);
+  factorId=data.id;$("qr").src=data.totp.qr_code;$("secret").textContent=data.totp.secret;$("qrwrap").hidden=false;show("mfa");
+}
+$("vf").onclick=async()=>{
+  const {error}=await sb.auth.mfa.challengeAndVerify({factorId,code:$("code").value.trim()});
+  $("code").value="";
+  if(error)return say("Wrong code.",1);
+  say("");next();
+};
+
+async function dash(user){
+  const {data:p}=await sb.from("profiles").select("username,role").eq("id",user.id).single();
+  if(!p||p.role!=="admin"){await sb.auth.signOut();show("login");captcha();return say("This account is not an admin.",1)}
+  $("me").textContent="Signed in as "+p.username;show("dash");render();
+}
+$("out").onclick=async()=>{await sb.auth.signOut();show("login");captcha()};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));render()});
+
+// risky actions need a fresh authenticator code
+async function confirm2(){
+  const code=prompt("Enter your authenticator code to confirm");
+  if(!code)return false;
+  const {error}=await sb.auth.mfa.challengeAndVerify({factorId,code:code.trim()});
+  if(error){alert("Wrong code, nothing was changed.");return false}
+  return true;
+}
+const when=s=>new Date(s).toLocaleString();
+function head(cols){const h=$("head");h.textContent="";const r=el("tr",null,h);cols.forEach(c=>el("th",c,r))}
+
+async function render(){
+  const body=$("body");body.textContent="";
+  if(tab==="users"){
+    head(["Username","Role","Status","Joined",""]);
+    const {data,error}=await sb.from("profiles").select("id,username,role,banned,created_at").order("created_at",{ascending:false}).limit(200);
+    if(error)return say(error.message,1);
+    data.forEach(u=>{
+      const r=el("tr",null,body);el("td",u.username,r);el("td",u.role,r);el("td",u.banned?"BANNED":"active",r);el("td",when(u.created_at),r);
+      const td=el("td",null,r);
+      if(u.role!=="admin"){const b=el("button",u.banned?"Unban":"Ban",td);b.onclick=async()=>{
+        if(!await confirm2())return;
+        const {error}=await sb.rpc("admin_set_ban",{target:u.id,flag:!u.banned});
+        error?say(error.message,1):render();
+      }}
+    });
+  }else if(tab==="listings"){
+    head(["Title","By","Posted",""]);
+    const {data,error}=await sb.from("listings").select("id,title,created_at,profiles(username)").order("created_at",{ascending:false}).limit(100);
+    if(error)return say(error.message,1);
+    data.forEach(l=>{
+      const r=el("tr",null,body);el("td",l.title,r);el("td",l.profiles?.username||"?",r);el("td",when(l.created_at),r);
+      const b=el("button","Remove",el("td",null,r));b.onclick=async()=>{
+        if(!await confirm2())return;
+        const {data:path,error}=await sb.rpc("admin_remove_listing",{lid:l.id});
+        if(error)return say(error.message,1);
+        if(path)await sb.storage.from("listing-images").remove([path]);
+        render();
+      };
+    });
+  }else{
+    head(["When","Admin","Action","Target"]);
+    const {data,error}=await sb.from("audit_log").select("action,target,created_at,profiles(username)").order("created_at",{ascending:false}).limit(200);
+    if(error)return say(error.message,1);
+    data.forEach(a=>{const r=el("tr",null,body);el("td",when(a.created_at),r);el("td",a.profiles?.username||"?",r);el("td",a.action,r);el("td",a.target||"",r)});
+  }
+}
+next();
+</script>
+</body>
+</html>
