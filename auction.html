@@ -45,6 +45,7 @@ button:disabled{opacity:.5;cursor:wait}
 <div class="top"><a href="index.html">← Calculator</a><span id="who" class="small mute"></span></div>
 <h1>Auction</h1>
 <p class="warn">Trade at your own risk. This is a message board, not a safe trading service. Never share your password, never trust anyone asking you to send items first, and report anything suspicious in the Discord.</p>
+<p class="warn"><b>For safer trades, use a middleman</b> from the official Farming and Friends Discord server: <a href="https://discord.gg/dunngames" target="_blank" rel="noopener noreferrer">discord.gg/dunngames</a></p>
 
 <section id="authBox">
 <div class="tabs"><button id="tl" aria-selected="true">Log in</button><button id="ts2" aria-selected="false">Sign up</button></div>
@@ -68,6 +69,7 @@ button:disabled{opacity:.5;cursor:wait}
 <p><button class="main" id="post" type="button">Post</button> <span id="pmsg" class="small"></span></p>
 </div>
 <p id="verify" class="warn" hidden>Verify your email to post and comment.</p>
+<p id="rbx" class="warn" hidden>Link your Discord account to post and comment. Your Discord username will be shown publicly. <button class="sm" id="rbxgo" type="button">Link Discord</button> <span id="rmsg" class="small"></span></p>
 </section>
 
 <h2>Listings</h2>
@@ -140,26 +142,27 @@ $("post").onclick=async()=>{
   $("post").disabled=false;
 };
 
+const nm=p=>(p?.username||"?")+(p?.discord_name?" (Discord: "+p.discord_name+")":"");
 async function load(){
   const box=$("list");
-  const {data:L,error}=await sb.from("listings").select("id,title,description,image_path,created_at,user_id,profiles(username)").order("created_at",{ascending:false}).limit(30);
+  const {data:L,error}=await sb.from("listings").select("id,title,description,image_path,created_at,user_id,profiles(username,discord_name)").order("created_at",{ascending:false}).limit(30);
   box.textContent="";
   if(error)return void el("p","Could not load listings.",box,"bad");
   if(!L.length)return void el("p","No listings yet.",box,"mute");
-  const {data:C}=await sb.from("comments").select("id,listing_id,body,user_id,profiles(username)").in("listing_id",L.map(l=>l.id)).order("created_at");
+  const {data:C}=await sb.from("comments").select("id,listing_id,body,user_id,profiles(username,discord_name)").in("listing_id",L.map(l=>l.id)).order("created_at");
   L.forEach(l=>{
     const c=el("article",null,box,"card"),img=el("img",null,c);
     img.alt=l.title;img.loading="lazy";img.src=sb.storage.from(BUCKET).getPublicUrl(l.image_path).data.publicUrl;
     el("h3",l.title,c);
-    el("p","by "+(l.profiles?.username||"?")+" · "+new Date(l.created_at).toLocaleString(),c,"mute small");
+    el("p","by "+nm(l.profiles)+" · "+new Date(l.created_at).toLocaleString(),c,"mute small");
     el("p",l.description,c,"desc");
     if(me&&me.id===l.user_id){const b=el("button","Delete listing",c,"sm");b.onclick=async()=>{if(!confirm("Delete this listing?"))return;await sb.storage.from(BUCKET).remove([l.image_path]);await sb.from("listings").delete().eq("id",l.id);load()}}
     const cm=el("div",null,c,"cm");
     (C||[]).filter(x=>x.listing_id===l.id).forEach(x=>{
-      const r=el("p",null,cm);el("b",(x.profiles?.username||"?")+": ",r);r.appendChild(document.createTextNode(x.body));
+      const r=el("p",null,cm);el("b",nm(x.profiles)+": ",r);r.appendChild(document.createTextNode(x.body));
       if(me&&me.id===x.user_id){const d=el("button","×",r,"x");d.title="Delete comment";d.onclick=async()=>{await sb.from("comments").delete().eq("id",x.id);load()}}
     });
-    if(me){
+    if(canPost){
       const row=el("div",null,c,"row2"),i=el("input",null,row),b=el("button","Send",row,"sm");
       i.maxLength=500;i.placeholder="Write a comment";
       b.onclick=async()=>{const t=i.value.trim();if(!t)return;const {error}=await sb.from("comments").insert({listing_id:l.id,user_id:me.id,body:t});error?alert(error.message):load()};
@@ -167,14 +170,30 @@ async function load(){
   });
 }
 
-function view(){
+let canPost=false;
+async function view(){
   const ok=!!me,verified=ok&&!!me.email_confirmed_at;
   $("authBox").hidden=ok;$("app").hidden=!ok;
   $("who").textContent=ok?"Logged in as "+(me.user_metadata?.username||"you"):"";
-  $("postBox").hidden=!verified;$("verify").hidden=!ok||verified;
+  let rbx=null;
+  if(ok){
+    let {data:p}=await sb.from("profiles").select("discord_name").eq("id",me.id).maybeSingle();
+    if(!p?.discord_name&&(me.identities||[]).some(i=>i.provider==="discord")){
+      const {error}=await sb.rpc("sync_discord");
+      if(error)say("rmsg",error.message,1);
+      else{const r=await sb.from("profiles").select("discord_name").eq("id",me.id).maybeSingle();p=r.data}
+    }
+    rbx=p?.discord_name||null;
+  }
+  canPost=verified&&!!rbx;
+  $("postBox").hidden=!canPost;$("verify").hidden=!ok||verified;$("rbx").hidden=!verified||!!rbx;
   if(!ok)captcha();
   load();
 }
+$("rbxgo").onclick=async()=>{
+  const {error}=await sb.auth.linkIdentity({provider:"discord",options:{redirectTo:location.origin+location.pathname}});
+  if(error)say("rmsg",error.message,1);
+};
 sb.auth.onAuthStateChange((_e,s)=>{me=s?.user||null;setTimeout(view,0)});
 </script>
 </body>
