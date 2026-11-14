@@ -107,7 +107,7 @@ footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 </header>
 <div class="page">
 <nav id="nav" role="tablist" aria-label="Sections"></nav>
-<p class="memo"><b>Prices last updated:</b> 11 November 2026. <b>Not listed:</b> event items and limited items. There are no public stats for them, so I won’t guess. A “?” means the value isn’t confirmed yet.</p>
+<p class="memo"><b>Prices last updated:</b> 11 November 2026. <b>Not listed:</b> most event and limited items. There are no public stats for them, so I won’t guess. Limited seeds (Alien Tentacle and Gasbloom Willow) have their own section in the sell tab. Their sell prices aren’t on the wiki, so type in your own, and they stay out of the wiki average and max buttons. A “?” means the value isn’t confirmed yet.</p>
 
 <section id="t0" role="tabpanel">
 <h2>Sell calculator</h2>
@@ -148,7 +148,7 @@ footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 <h2>Shop prices</h2>
 <label class="f">Show<select id="cat"></select></label>
 <div class="scroll"><table><thead><tr><th>Item</th><th>Type</th><th>Buy price</th><th>Notes</th></tr></thead><tbody id="shop"></tbody></table></div>
-<p class="note">Crop seeds come from FarmCo and tree seeds from Wood N Stuff. A pallet is 27 boxes, sold by the Bulk Store Owner outside FarmCo, and I work out its price as 27 boxes minus 5%, so it can be a few coins off. Event seeds can’t be bought.</p>
+<p class="note">Crop seeds come from FarmCo and tree seeds from Wood N Stuff. A pallet is 27 boxes, sold by the Bulk Store Owner outside FarmCo, and I work out its price as 27 boxes minus 5%, so it can be a few coins off. Alien Tentacle seeds are sold inside the UFO, which has a 5% chance to appear each night. Other event seeds can’t be bought.</p>
 </section>
 
 <section id="t4" class="hidden" role="tabpanel">
@@ -202,6 +202,7 @@ footer{max-width:900px;margin:0 auto;padding:14px 22px 34px}
 const CROPS=[["Wheat",3,100,1,"Any",3,4],["Corn",8,250,2.5,"",9,12],["Rice",49,2000,8,"Level 1",52,65],["Oat",56,2200,8],["Cocoa",161],["Sugar Cane",209,8400,22],["Soybean",551,24000,36.3,"",543,680],["Tomato",612,26400,36,"Any",611,769],["Cabbage",1065,57600,60,"Any",1278,1603],["Carrot",1911,85000,40,"Level 4",1770],["Grape",1991,105000,16.5,"Level 3 grape gear, trellis"],["Potato",2244,120000,40,"Level 4-5 seeder and harvester",2469,3125]];
 const GROUPS=[
 ["Crops",CROPS],
+["Limited seeds",[["Alien Tentacle",0],["Gasbloom Willow",0]]],
 ["Liquids",[["Spoiled",28],["Regular",280],["Free-Range",542],["Honey",9935],["Grape Juice",13687],["Chocolate",21298]]],
 ["Animal products and wool",[["Egg Box",548],["Cheese",1106],["Scrambled Egg",2191],["Wool Bundle",2477],["Honey Oatmeal",3053],["Pizza",4130],["Shirt Box",6364],["Cake",7267]]],
 ["Hay",[["Square Hay Bale",1229],["Round Hay Bale",4236]]],
@@ -213,6 +214,8 @@ const SHOP=[
 ["Tree","Cocoa seed box (50 trees)",70000,"Wood N Stuff, grows 32 min"],
 ["Tree","Cypress seed box",150000,"Wood N Stuff, grows 38 min"],
 ["Tree","Birch seed box",210000,"Wood N Stuff, grows 55 min"],
+["Limited","Alien Tentacle seed box",60000,"Sold in the UFO (5% chance each night), grows 61 min, no pallets"],
+["Limited","Gasbloom Willow seed box",500000,"Tree from the 2026 UFO event. Price is from a community wiki and it may not be sold any more"],
 ["Animal","Sheep",3000,"AnimalCo. Needs Sheep License (about 7,200 XP), trailer, fence, feeder, food and shears"],
 ["Animal","Animal limit",null,"32 by default, 52 with the More Animals pass"],
 ["Machine","Chocolate Milk Factory",50000,"Build menu"],
@@ -224,7 +227,7 @@ const SHOP=[
 // price of ONE seed box, same as the shop: crops from the crop list, trees from Wood N Stuff
 const BOX={};
 CROPS.forEach(c=>{if(c[2])BOX[c[0]]=c[2]});
-Object.assign(BOX,{"Cocoa":70000,"Pine":600,"Cocoa Log":70000,"Cypress":150000,"Birch":210000});
+Object.assign(BOX,{"Cocoa":70000,"Pine":600,"Cocoa Log":70000,"Cypress":150000,"Birch":210000,"Alien Tentacle":60000,"Gasbloom Willow":500000});
 const $=id=>document.getElementById(id);
 const fmt=n=>isFinite(n)?Math.round(n).toLocaleString("en-US"):"0";
 const num=v=>{v=Number(v);return isFinite(v)&&v>0?Math.min(v,1e12):0};
@@ -270,7 +273,7 @@ const bonus=()=>($("club").checked?.10:0)+($("group").checked?.05:0);
 function update(){
   let rev=0,bon=0,cost=0;const b=bonus();
   GROUPS.forEach(([g,items])=>items.forEach(it=>{
-    const k=it[0],q=num(Q[k].value),base=price(k)*q,extra=g==="Crops"?base*b:0,c=Math.floor(num(C[k].value))*(BOX[k]||0);
+    const k=it[0],q=num(Q[k].value),base=price(k)*q,extra=(g==="Crops"||k==="Alien Tentacle")?base*b:0,c=Math.floor(num(C[k].value))*(BOX[k]||0);
     rev+=base+extra;bon+=extra;cost+=c;
     R[k].textContent=fmt(base+extra);sign(F[k],base+extra-c);
   }));
@@ -283,10 +286,10 @@ function update(){
 
 function ranking(){
   const u=num($("units").value)||50,b=bonus(),rows=[];
-  CROPS.forEach(c=>{if(c[2]===undefined)return;const net=price(c[0])*u*(1+b)-c[2];rows.push([c[0],c[2],c[3],net,c[3]?net/c[3]:null,c[4]])});
+  CROPS.forEach(c=>{if(c[2]===undefined)return;const has=price(c[0])>0,net=has?price(c[0])*u*(1+b)-c[2]:null;rows.push([c[0],c[2],c[3],net,has&&c[3]?net/c[3]:null,c[4]])});
   rows.sort((a,b)=>(a[4]===null)-(b[4]===null)||(b[4]??0)-(a[4]??0));
   const tb=$("rank");tb.textContent="";
-  rows.forEach(r=>{const tr=el("tr",null,tb);[r[0],fmt(r[1]),r[2]===undefined?"N/A":r[2],fmt(r[3]),r[4]===null?"N/A":(Math.round(r[4]*10)/10).toLocaleString("en-US"),r[5]||"-"].forEach(v=>el("td",v,tr))})
+  rows.forEach(r=>{const tr=el("tr",null,tb);[r[0],fmt(r[1]),r[2]===undefined?"N/A":r[2],r[3]===null?"N/A":fmt(r[3]),r[4]===null?"N/A":(Math.round(r[4]*10)/10).toLocaleString("en-US"),r[5]||"-"].forEach(v=>el("td",v,tr))})
 }
 
 function chocolate(){
