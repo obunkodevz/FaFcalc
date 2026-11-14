@@ -124,11 +124,11 @@ function head(cols){const h=$("head");h.textContent="";const r=el("tr",null,h);c
 async function render(){
   const body=$("body");body.textContent="";
   if(tab==="users"){
-    head(["Username","Role","Status","Joined",""]);
-    const {data,error}=await sb.from("profiles").select("id,username,role,banned,created_at").order("created_at",{ascending:false}).limit(200);
+    head(["Username","Discord","Role","Status","Joined",""]);
+    const {data,error}=await sb.from("profiles").select("id,username,discord_name,role,banned,created_at").order("created_at",{ascending:false}).limit(200);
     if(error)return say(error.message,1);
     data.forEach(u=>{
-      const r=el("tr",null,body);el("td",u.username,r);el("td",u.role,r);el("td",u.banned?"BANNED":"active",r);el("td",when(u.created_at),r);
+      const r=el("tr",null,body);el("td",u.username,r);el("td",u.discord_name||"-",r);el("td",u.role,r);el("td",u.banned?"BANNED":"active",r);el("td",when(u.created_at),r);
       const td=el("td",null,r);
       if(u.role!=="admin"){const b=el("button",u.banned?"Unban":"Ban",td);b.onclick=async()=>{
         if(!await confirm2())return;
